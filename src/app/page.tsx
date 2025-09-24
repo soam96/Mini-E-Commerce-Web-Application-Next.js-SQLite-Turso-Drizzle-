@@ -142,7 +142,19 @@ export default function HomePage() {
         body: JSON.stringify({ email: loginEmail, password: loginPassword }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Login failed");
+      if (!res.ok) {
+        const msg: string = data?.error || "Login failed";
+        if (res.status === 404 || /not found|no account|register/i.test(msg)) {
+          // If user doesn't exist, guide them to register and prefill email
+          setError(null);
+          setLoginOpen(false);
+          setRegEmail(loginEmail);
+          setRegisterOpen(true);
+          setMessage("No account found. Please register to continue.");
+          return;
+        }
+        throw new Error(msg);
+      }
       // Immediately verify session from server to ensure cookie is recognized
       const meRes = await fetch("/api/auth/me", { credentials: "include" });
       if (meRes.ok) {
@@ -407,6 +419,20 @@ export default function HomePage() {
                         <Button type="submit" disabled={authLoading}>{authLoading ? "Signing in..." : "Sign in"}</Button>
                       </DialogFooter>
                     </form>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      No account?
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setLoginOpen(false);
+                          setRegEmail(loginEmail);
+                          setRegisterOpen(true);
+                        }}
+                        className="ml-1 text-primary underline"
+                      >
+                        Register
+                      </button>
+                    </div>
                   </DialogContent>
                 </Dialog>
 
@@ -452,6 +478,20 @@ export default function HomePage() {
                         <Button type="submit" disabled={authLoading}>{authLoading ? "Creating..." : "Create account"}</Button>
                       </DialogFooter>
                     </form>
+                    <div className="mt-2 text-sm text-muted-foreground">
+                      Already have an account?
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setRegisterOpen(false);
+                          setLoginEmail(regEmail);
+                          setLoginOpen(true);
+                        }}
+                        className="ml-1 text-primary underline"
+                      >
+                        Login
+                      </button>
+                    </div>
                   </DialogContent>
                 </Dialog>
               </div>
