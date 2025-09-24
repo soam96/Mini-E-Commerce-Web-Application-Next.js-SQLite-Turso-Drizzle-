@@ -262,7 +262,14 @@ export default function HomePage() {
         body: JSON.stringify({ items }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Order failed");
+      if (!res.ok) {
+        if (res.status === 401) {
+          setLoginOpen(true);
+          setCartOpen(true);
+          throw new Error("Please login to place order");
+        }
+        throw new Error(data?.error || "Order failed");
+      }
       setCart([]);
       setCartOpen(false);
       setMessage("Order placed successfully");
@@ -383,7 +390,18 @@ export default function HomePage() {
                   <span className="text-sm text-muted-foreground">Subtotal</span>
                   <span className="text-lg font-semibold">₹{subtotal.toFixed(2)}</span>
                 </div>
-                <Button className="mt-4 w-full" disabled={cart.length === 0 || placingOrder || !me} onClick={placeOrder}>
+                <Button 
+                  className="mt-4 w-full" 
+                  disabled={cart.length === 0 || placingOrder}
+                  onClick={() => {
+                    if (placingOrder || cart.length === 0) return;
+                    if (me) {
+                      placeOrder();
+                    } else {
+                      setLoginOpen(true);
+                    }
+                  }}
+                >
                   {placingOrder ? "Placing order..." : me ? "Place Order" : "Login to order"}
                 </Button>
               </SheetContent>

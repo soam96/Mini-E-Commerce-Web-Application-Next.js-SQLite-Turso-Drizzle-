@@ -42,9 +42,9 @@ export async function POST(request: NextRequest) {
 
     if (userResult.length === 0) {
       return NextResponse.json({
-        error: "Invalid credentials",
-        code: "INVALID_CREDENTIALS"
-      }, { status: 401 });
+        error: "User not found. Please register to continue.",
+        code: "USER_NOT_FOUND"
+      }, { status: 404 });
     }
 
     const user = userResult[0];

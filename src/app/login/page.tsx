@@ -26,7 +26,14 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data?.error || "Login failed");
+      if (!res.ok) {
+        // Auto-redirect to register if user not found
+        if (res.status === 404 || data?.code === "USER_NOT_FOUND") {
+          router.push(`/register?email=${encodeURIComponent(email)}`);
+          return;
+        }
+        throw new Error(data?.error || "Login failed");
+      }
       router.push("/");
     } catch (e: any) {
       setError(e.message || "Login failed");
