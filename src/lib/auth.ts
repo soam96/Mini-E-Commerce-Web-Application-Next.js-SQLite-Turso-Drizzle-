@@ -20,26 +20,28 @@ export async function getCurrentUser(request?: NextRequest) {
       const sessionSecret = process.env.SESSION_SECRET || 'dev-secret-change-in-production';
       const cookieValue = sessionCookie.value;
       
-      // Simple signed cookie format: value.signature
-      const [sessionData, signature] = cookieValue.split('.');
+      // Simple signed cookie format: base64(json).signature
+      const [sessionDataB64, signature] = cookieValue.split('.');
       
-      if (!sessionData || !signature) {
+      if (!sessionDataB64 || !signature) {
         return null;
       }
 
-      // Verify signature
+      // Decode session data BEFORE verifying
+      const decodedData = Buffer.from(sessionDataB64, 'base64').toString('utf-8');
+
+      // Verify signature against the decoded JSON string (matches login signing)
       const crypto = require('crypto');
       const expectedSignature = crypto
         .createHmac('sha256', sessionSecret)
-        .update(sessionData)
+        .update(decodedData)
         .digest('hex');
 
       if (signature !== expectedSignature) {
         return null;
       }
 
-      // Decode session data
-      const decodedData = Buffer.from(sessionData, 'base64').toString('utf-8');
+      // Parse decoded session JSON
       const sessionInfo = JSON.parse(decodedData);
       
       if (!sessionInfo.userId) {
