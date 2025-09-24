@@ -143,7 +143,14 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Login failed");
-      setMe(data.data as User);
+      // Immediately verify session from server to ensure cookie is recognized
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        if (meData?.success && meData?.data) setMe(meData.data as User);
+      } else {
+        setMe(data.data as User);
+      }
       setLoginOpen(false);
       setMessage("Logged in successfully");
     } catch (e: any) {
@@ -172,7 +179,14 @@ export default function HomePage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "Registration failed");
-      setMe(data.data as User);
+      // Immediately verify session from server to ensure cookie is recognized
+      const meRes = await fetch("/api/auth/me", { credentials: "include" });
+      if (meRes.ok) {
+        const meData = await meRes.json();
+        if (meData?.success && meData?.data) setMe(meData.data as User);
+      } else {
+        setMe(data.data as User);
+      }
       setRegisterOpen(false);
       setMessage("Registered successfully");
     } catch (e: any) {

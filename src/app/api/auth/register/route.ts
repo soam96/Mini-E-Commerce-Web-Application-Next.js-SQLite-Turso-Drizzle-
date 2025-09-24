@@ -3,6 +3,7 @@ import { db } from '@/db';
 import { users } from '@/db/schema';
 import { eq, or } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
+import { createHmac } from 'node:crypto';
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,9 +93,7 @@ export async function POST(request: NextRequest) {
     const sessionData = JSON.stringify({ userId: createdUser.id });
     
     // Simple signing mechanism (in production, use a proper JWT library)
-    const crypto = require('crypto');
-    const signature = crypto
-      .createHmac('sha256', sessionSecret)
+    const signature = createHmac('sha256', sessionSecret)
       .update(sessionData)
       .digest('hex');
     
