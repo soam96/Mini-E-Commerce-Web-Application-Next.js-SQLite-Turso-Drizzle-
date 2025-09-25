@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Dashboard</h2>
+<p>Welcome, {{ user.Username }} ({{ user.Role }})</p>
+<ul>
+  <li><a href="/products/">Browse Products</a></li>
+  <li><a href="/orders/">My Orders</a></li>
+  {% if user.Role in ['Seller','Admin'] %}
+    <li><a href="/products/new">Add Product</a></li>
+  {% endif %}
+  {% if user.Role == 'Admin' %}
+    <p>As Admin, you can view all orders on the Orders page.</p>
+  {% endif %}
+</ul>
+{% endblock %}

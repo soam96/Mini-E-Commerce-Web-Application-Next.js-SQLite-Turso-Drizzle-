@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Products</h2>
+<form method="get" role="search" style="display:flex;gap:.5rem;align-items:center;">
+  <input type="search" name="q" placeholder="Search products..." value="{{ request.args.get('q','') }}" />
+  <input type="number" name="min" step="0.01" placeholder="Min price" value="{{ request.args.get('min','') }}" />
+  <input type="number" name="max" step="0.01" placeholder="Max price" value="{{ request.args.get('max','') }}" />
+  <button type="submit">Filter</button>
+</form>
+
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Price</th>
+      <th>Stock</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for p in products %}
+    <tr>
+      <td>{{ p.Name }}</td>
+      <td>${{ '%.2f'|format(p.Price) }}</td>
+      <td>{{ p.Stock }}</td>
+      <td>
+        {% if current_user.is_authenticated %}
+        <form method="post" action="/orders/">
+          <input type="hidden" name="product_id" value="{{ p.ProductID }}">
+          <input type="number" name="quantity" min="1" max="{{ p.Stock }}" value="1" style="width:6rem;" />
+          <button type="submit" {% if p.Stock <= 0 %}disabled{% endif %}>Order</button>
+        </form>
+        {% else %}
+          <a href="/users/login">Login to order</a>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% if current_user.is_authenticated and current_user.Role in ['Seller','Admin'] %}
+  <p><a href="/products/new">Add Product</a></p>
+{% endif %}
+{% endblock %}
